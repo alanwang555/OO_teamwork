@@ -1,5 +1,6 @@
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.BorderFactory;
@@ -22,16 +23,22 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+
+
+import javax.swing.filechooser.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.Choice;
 import java.awt.Label;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
-
+import java.util.ArrayList;
 import java.awt.Scrollbar;
 import javax.swing.JTextPane;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import javax.swing.event.*;
@@ -57,6 +64,55 @@ public class UI extends JFrame {
 		});
 	}
 	
+	public class BackgroundColorAction extends StyledEditorKit.StyledTextAction {
+
+	    private Color color;
+
+	    public BackgroundColorAction(Color color) {
+	        super(StyleConstants.Background.toString());
+	        this.color = color;
+	    }
+
+	    @Override
+	    public void actionPerformed(ActionEvent ae) {
+	    	JEditorPane editor = getEditor(ae);
+	        if (editor == null) return;
+	        
+	        SimpleAttributeSet attr = new SimpleAttributeSet();
+	        if(this.color != null) attr.addAttribute(HTML.Attribute.BGCOLOR, getHTMLColor(color));
+	        
+	        MutableAttributeSet outerAttr = new SimpleAttributeSet();
+	        outerAttr.addAttribute(HTML.Tag.FONT, attr);
+	       
+	        setCharacterAttributes(editor, outerAttr, false);}
+	}
+	
+	public static String getHTMLColor(Color color) {
+		if (color == null) return "";
+        return "#" + Integer.toHexString(color.getRGB()).substring(2).toUpperCase();
+	}
+	
+	
+	public class InsertImageAction {
+	    private String absPath;
+
+	    public InsertImageAction(String absPath) {
+	        this.absPath = absPath;
+	    }
+
+	    public AttributeSet actionPerformed(ActionEvent ae) {
+	        
+	        SimpleAttributeSet attr = new SimpleAttributeSet();
+	        attr.addAttribute(HTML.Attribute.SRC, "file:///"+absPath);
+	        attr.addAttribute(HTML.Attribute.WIDTH, "600");
+	        
+	        MutableAttributeSet outerAttr = new SimpleAttributeSet();
+	        outerAttr.addAttribute(HTML.Tag.IMG, attr);
+	        return outerAttr;
+	    }
+	}
+	
+	
 	
 	
 	
@@ -67,11 +123,13 @@ public class UI extends JFrame {
 	        super.insertString(offs, str, a);
 	        System.out.println("insert str = " + str);
 	    }
+
 	}
 	
 	class MyListener implements DocumentListener {  		//textpane listener
 	    public void changedUpdate(DocumentEvent e) {
 	        System.out.println("update");
+	        
 	    }
 	    public void insertUpdate(DocumentEvent e) {
 	        System.out.println("insert");
@@ -83,6 +141,8 @@ public class UI extends JFrame {
 	
 
 	//////////////////////////////////////////////////////////////////////////
+	
+
 	
 	
 	/**
@@ -212,25 +272,11 @@ public class UI extends JFrame {
         JMenuItem background_yellow = new JMenuItem("\u9EC3\u8272");
         backround.add(background_yellow);
         
+        JMenu insert_button = new JMenu("\u63D2\u5165");
+        menuBar_2.add(insert_button);
         
-        
-        
-        
-        
-        JMenu border = new JMenu("\u908A\u6846");  //border_change 
-        menuBar_2.add(border);
-        
-        JMenuItem border_black = new JMenuItem("\u9ED1\u8272");
-        border.add(border_black);
-        
-        JMenuItem border_blue = new JMenuItem("\u85CD\u8272");
-        border.add(border_blue);
-        
-        JMenuItem border_red = new JMenuItem("\u7D05\u8272");
-        border.add(border_red);
-        
-        JMenuItem border_yellow = new JMenuItem("\u9EC3\u8272");
-        border.add(border_yellow);
+        JMenuItem insert_pic = new JMenuItem("\u5716\u7247");
+        insert_button.add(insert_pic);
         
         
         
@@ -268,14 +314,14 @@ public class UI extends JFrame {
 		savebutton.setBounds(100,100,100,80);
 		savebutton.setBounds(100,100,100,80);
 		
-		JButton btnNewButton = new JButton(Boldicon);
-		menuBar.add(btnNewButton);
+		JButton boldbutton = new JButton(Boldicon);
+		menuBar.add(boldbutton);
 		
-		JButton btnNewButton_1 = new JButton(Italicicon);
-		menuBar.add(btnNewButton_1);
+		JButton Italicbutton = new JButton(Italicicon);
+		menuBar.add(Italicbutton);
 		
-		JButton btnNewButton_2 = new JButton(Underlineicon);
-		menuBar.add(btnNewButton_2);
+		JButton underlinebutton = new JButton(Underlineicon);
+		menuBar.add(underlinebutton);
 		
 		
 		
@@ -286,6 +332,10 @@ public class UI extends JFrame {
 		
 		JEditorPane word_editorPane = new JEditorPane(); //word_editpane
 		JScrollPane scrollPane1 = new JScrollPane(word_editorPane);
+		doc = new MyDocument();
+        listener = new MyListener(); //listener
+        doc.addDocumentListener(listener);
+        word_editorPane.setDocument(doc);
 		scrollPane1.setBounds(12, 83, 525, 237);
 		word_editorPane.setContentType("text/html");
 		scrollPane1.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -293,11 +343,12 @@ public class UI extends JFrame {
 		
 		
 		
+		
+		
+		
+		
+		
 		JTextPane html_textPane = new JTextPane(); //html_textpane
-	    doc = new MyDocument();
-        listener = new MyListener(); //listener
-        doc.addDocumentListener(listener);
-        html_textPane.setDocument(doc);
 	    JScrollPane scrollPane2 = new JScrollPane(html_textPane);
 	    scrollPane2.setBounds(12, 404, 525, 237);
 	    scrollPane2.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -305,12 +356,16 @@ public class UI extends JFrame {
 		
 		
 		
+
+		
+		
+		
 		
 		JButton submit = new JButton("submit"); 	//submit html button
 		submit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String data = html_textPane.getText();
-				word_editorPane.setText(data);
+				String data = word_editorPane.getText();
+				html_textPane.setText(data);
 			}
 		});
 		submit.setBounds(212, 340, 116, 45);
@@ -322,8 +377,9 @@ public class UI extends JFrame {
 		 background_white.addActionListener(  	//change backround listener
 	                new ActionListener() {
 	                    public void actionPerformed(ActionEvent e) {
-	                    	html_textPane.setBackground(Color.white);
-	                    	word_editorPane.setBackground(Color.white);
+	                    	
+	                    	new BackgroundColorAction(Color.white).actionPerformed(e);
+	                      
 	                    }
 	                }
 	            );
@@ -331,8 +387,7 @@ public class UI extends JFrame {
         background_blue.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                    	html_textPane.setBackground(Color.blue);
-                    	word_editorPane.setBackground(Color.blue);
+                    	new BackgroundColorAction(Color.blue).actionPerformed(e);
                     }
                 }
             );
@@ -340,93 +395,68 @@ public class UI extends JFrame {
         background_red.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                    	html_textPane.setBackground(Color.red);
-                    	word_editorPane.setBackground(Color.red);
+                    	new BackgroundColorAction(Color.RED).actionPerformed(e); 
                     }
                 }
             );
         
-        background_yellow.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                    	html_textPane.setBackground(Color.yellow);
-                    	word_editorPane.setBackground(Color.yellow);
-                    }
-                }
-            );
+        background_yellow.addActionListener(new ActionListener() {
+            
+        	public void actionPerformed(ActionEvent e) { 
+        		new BackgroundColorAction(Color.yellow).actionPerformed(e);
+            }
+        }
+        
+        		);
+        
+        
+        
+        
+        word_black.addActionListener(new StyledEditorKit.ForegroundAction("Black", Color.black));
+        
+        
+        word_blue.addActionListener(new StyledEditorKit.ForegroundAction("Blue", Color.blue));
+        
+        
+        word_yellow.addActionListener(new StyledEditorKit.ForegroundAction("Yellow", Color.yellow));
+        
+        
+        word_red.addActionListener(new StyledEditorKit.ForegroundAction("Red", Color.red));
+        
+        
+        underlinebutton.addActionListener(new StyledEditorKit.UnderlineAction());
+        
+        
+        Italicbutton.addActionListener(new StyledEditorKit.ItalicAction());
+        
+        
+        boldbutton.addActionListener(new StyledEditorKit.BoldAction());
         
         
         
         
         
-        border_yellow.addActionListener(     //change border listener
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                    	scrollPane1.setBorder(BorderFactory.createLineBorder(Color.YELLOW));
-                    	scrollPane2.setBorder(BorderFactory.createLineBorder(Color.YELLOW));
-                    }
-                }
-            );
-        border_black.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                    	scrollPane1.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                    	scrollPane2.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                    }
-                }
-            );
-        border_red.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                    	scrollPane1.setBorder(BorderFactory.createLineBorder(Color.RED));
-                    	scrollPane2.setBorder(BorderFactory.createLineBorder(Color.RED));
-                    }
-                }
-            );
-        border_blue.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                    	scrollPane1.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-                    	scrollPane2.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-                    }
-                }
-            );
+        
+        insert_pic.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent ae)  
+        	{ 
+        	
+        		JFileChooser fileChooser = new JFileChooser();//宣告filechooser 
+        		int returnValue = fileChooser.showOpenDialog(null);//叫出filechooser 
+        		HTMLDocument doc = (HTMLDocument) word_editorPane.getDocument();
+        		if (returnValue == JFileChooser.APPROVE_OPTION) //判斷是否選擇檔案 
+        		{ 
+        		String Path = fileChooser.getSelectedFile().getAbsolutePath();
+        		System.out.println(Path);
+        		
+        		}
+        		
+        		
+        	} 
+ 
+        });
         
         
-        
-        
-        word_black.addActionListener( 			//change word listener
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                    	scrollPane1.setForeground(Color.black);
-                    	scrollPane2.setForeground(Color.black);
-                    }
-                }
-            );
-        word_blue.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                    	html_textPane.setForeground(Color.blue);
-                    	word_editorPane.setForeground(Color.blue);
-                    }
-                }
-            );
-        word_yellow.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                    	scrollPane1.setForeground(Color.yellow);
-                    	scrollPane2.setForeground(Color.yellow);
-                    }
-                }
-            );
-        word_red.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                    	scrollPane1.setForeground(Color.red);
-                    	scrollPane2.setForeground(Color.red);
-                    }
-                }
-            );
         
         
         
@@ -441,3 +471,18 @@ public class UI extends JFrame {
 		
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
