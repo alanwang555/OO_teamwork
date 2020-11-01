@@ -20,14 +20,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
-
-
 import javax.swing.filechooser.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.Choice;
@@ -75,46 +74,29 @@ public class UI extends JFrame {
 
 	    @Override
 	    public void actionPerformed(ActionEvent ae) {
-	    	JEditorPane editor = getEditor(ae);
-	        if (editor == null) return;
+	        JEditorPane editor = getEditor(ae);
+	        if (editor == null) {
+	            return;
+	        }
 	        
+	        //Add span Tag
+	        String htmlStyle = "background-color:" + getHTMLColor(color);
 	        SimpleAttributeSet attr = new SimpleAttributeSet();
-	        if(this.color != null) attr.addAttribute(HTML.Attribute.BGCOLOR, getHTMLColor(color));
-	        
+	        attr.addAttribute(HTML.Attribute.STYLE, htmlStyle);
 	        MutableAttributeSet outerAttr = new SimpleAttributeSet();
-	        outerAttr.addAttribute(HTML.Tag.FONT, attr);
-	       
-	        setCharacterAttributes(editor, outerAttr, false);}
+	        outerAttr.addAttribute(HTML.Tag.SPAN, attr);
+	        //Next line is just an instruction to editor to change color
+	        StyleConstants.setBackground(outerAttr, this.color);
+	        setCharacterAttributes(editor, outerAttr, false);
+	    }
 	}
 	
 	public static String getHTMLColor(Color color) {
-		if (color == null) return "";
-        return "#" + Integer.toHexString(color.getRGB()).substring(2).toUpperCase();
-	}
-	
-	
-	public class InsertImageAction {
-	    private String absPath;
-
-	    public InsertImageAction(String absPath) {
-	        this.absPath = absPath;
+	    if (color == null) {
+	        return "#000000";
 	    }
-
-	    public AttributeSet actionPerformed(ActionEvent ae) {
-	        
-	        SimpleAttributeSet attr = new SimpleAttributeSet();
-	        attr.addAttribute(HTML.Attribute.SRC, "file:///"+absPath);
-	        attr.addAttribute(HTML.Attribute.WIDTH, "600");
-	        
-	        MutableAttributeSet outerAttr = new SimpleAttributeSet();
-	        outerAttr.addAttribute(HTML.Tag.IMG, attr);
-	        return outerAttr;
-	    }
+	    return "#" +  Integer.toHexString(color.getRGB()).substring(2).toUpperCase();
 	}
-	
-	
-	
-	
 	
 	/////////////////////////////////////////////////////////////////////////
 	
@@ -154,12 +136,12 @@ public class UI extends JFrame {
 		setBounds(100, 100, 563, 725);
 		setResizable(false);
 		contentPane = new JPanel();
+		contentPane.setBackground(Color.LIGHT_GRAY);
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
 		MyDocument doc;
 		DocumentListener listener;
-
 		
 		ImageIcon Saveicon = new ImageIcon("pic\\SaveHK.png");   // toolbar pics
 		ImageIcon Openicon = new ImageIcon("pic\\OpenHK.png");
@@ -174,7 +156,55 @@ public class UI extends JFrame {
 		
 		
 		
+		
+		
+		
+		JMenuBar menuBar = new JMenuBar(); //second toolbar, idk we gonna need last three pic or not, so i just keep it
+		menuBar.setBackground(Color.LIGHT_GRAY);
+		menuBar.setBounds(0, 21, 563, 23);
+		contentPane.add(menuBar);
+		
+		JButton savebutton = new JButton(Saveicon);
+		savebutton.setBounds(100,100,100,80);
+		menuBar.add(savebutton);
+		
+		JButton openbutton = new JButton(Openicon);
+		menuBar.add(openbutton);
+		
+		JButton Newbutton = new JButton(Newicon);
+		menuBar.add(Newbutton);
+		
+		JButton printbutton = new JButton(Printicon);
+		menuBar.add(printbutton);
+		
+		JButton cutbutton = new JButton(Cuticon);
+		menuBar.add(cutbutton);
+		
+		JButton copybutton = new JButton(Copyicon);
+		menuBar.add(copybutton);
+		
+		JButton pastebutton = new JButton(Pasteicon);
+		menuBar.add(pastebutton);
+		savebutton.setBounds(100,100,100,80);
+		savebutton.setBounds(100,100,100,80);
+		savebutton.setBounds(100,100,100,80);
+		
+		JButton boldbutton = new JButton(Boldicon);
+		menuBar.add(boldbutton);
+		
+		JButton Italicbutton = new JButton(Italicicon);
+		menuBar.add(Italicbutton);
+		
+		JButton underlinebutton = new JButton(Underlineicon);
+		menuBar.add(underlinebutton);
+		
+		
+		
+		
+		
+		
 		JMenuBar menuBar_2 = new JMenuBar();
+		menuBar_2.setBackground(Color.LIGHT_GRAY);
 		menuBar_2.setBounds(0, 0, 563, 23);
 		contentPane.add(menuBar_2);
 		
@@ -244,17 +274,6 @@ public class UI extends JFrame {
         
         
         
-        JMenu platform = new JMenu("\u5E73\u53F0"); //platform_change
-        menuBar_2.add(platform);
-        
-        JMenuItem windows = new JMenuItem("Windows");
-        platform.add(windows);
-        
-        JMenuItem linux = new JMenuItem("Linux");
-        platform.add(linux);
-        
-        
-        
         
         
         JMenu backround = new JMenu("\u80CC\u666F");  // backround_change
@@ -272,6 +291,67 @@ public class UI extends JFrame {
         JMenuItem background_yellow = new JMenuItem("\u9EC3\u8272");
         backround.add(background_yellow);
         
+        
+        
+        JMenu platform = new JMenu("\u5E73\u53F0"); //platform_change
+        menuBar_2.add(platform);
+        
+        
+        
+        JMenuItem windows = new JMenuItem("Windows");
+        platform.add(windows);
+        windows.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent ae)  
+        	{ 
+        		String lookAndFeel = "javax.swing.plaf.metal.MetalLookAndFeel";
+        		contentPane.setBackground(Color.lightGray);
+        		menuBar_2.setBackground(Color.lightGray);
+        		menuBar.setBackground(Color.lightGray);
+        		try {
+					UIManager.setLookAndFeel(lookAndFeel);
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnsupportedLookAndFeelException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        		
+        	} 
+ 
+        });
+        
+        
+        
+        JMenuItem linux = new JMenuItem("Linux");
+        platform.add(linux);
+        linux.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent ae)  
+        	{ 
+        		String lookAndFeel = "com.sun.java.swing.plaf.motif.MotifLookAndFeel";
+        		contentPane.setBackground(Color.darkGray);
+        		menuBar_2.setBackground(Color.darkGray);
+        		menuBar.setBackground(Color.darkGray);
+        		menuBar.setForeground(Color.white);
+        		try {
+        			UIManager.setLookAndFeel(lookAndFeel);
+        			UIManager.put("MenuItem.background", Color.CYAN);
+				} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+						| UnsupportedLookAndFeelException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+        		
+        	} 
+ 
+        });
+        
         JMenu insert_button = new JMenu("\u63D2\u5165");
         menuBar_2.add(insert_button);
         
@@ -281,47 +361,6 @@ public class UI extends JFrame {
         
         
         
-        
-		
-		
-		
-		JMenuBar menuBar = new JMenuBar(); //second toolbar, idk we gonna need last three pic or not, so i just keep it
-		menuBar.setBounds(0, 25, 563, 23);
-		contentPane.add(menuBar);
-		
-		JButton savebutton = new JButton(Saveicon);
-		savebutton.setBounds(100,100,100,80);
-		menuBar.add(savebutton);
-		
-		JButton openbutton = new JButton(Openicon);
-		menuBar.add(openbutton);
-		
-		JButton Newbutton = new JButton(Newicon);
-		menuBar.add(Newbutton);
-		
-		JButton printbutton = new JButton(Printicon);
-		menuBar.add(printbutton);
-		
-		JButton cutbutton = new JButton(Cuticon);
-		menuBar.add(cutbutton);
-		
-		JButton copybutton = new JButton(Copyicon);
-		menuBar.add(copybutton);
-		
-		JButton pastebutton = new JButton(Pasteicon);
-		menuBar.add(pastebutton);
-		savebutton.setBounds(100,100,100,80);
-		savebutton.setBounds(100,100,100,80);
-		savebutton.setBounds(100,100,100,80);
-		
-		JButton boldbutton = new JButton(Boldicon);
-		menuBar.add(boldbutton);
-		
-		JButton Italicbutton = new JButton(Italicicon);
-		menuBar.add(Italicbutton);
-		
-		JButton underlinebutton = new JButton(Underlineicon);
-		menuBar.add(underlinebutton);
 		
 		
 		
@@ -332,10 +371,6 @@ public class UI extends JFrame {
 		
 		JEditorPane word_editorPane = new JEditorPane(); //word_editpane
 		JScrollPane scrollPane1 = new JScrollPane(word_editorPane);
-		doc = new MyDocument();
-        listener = new MyListener(); //listener
-        doc.addDocumentListener(listener);
-        word_editorPane.setDocument(doc);
 		scrollPane1.setBounds(12, 83, 525, 237);
 		word_editorPane.setContentType("text/html");
 		scrollPane1.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -349,6 +384,10 @@ public class UI extends JFrame {
 		
 		
 		JTextPane html_textPane = new JTextPane(); //html_textpane
+	    doc = new MyDocument();
+        listener = new MyListener(); //listener
+        doc.addDocumentListener(listener);
+        html_textPane.setDocument(doc);
 	    JScrollPane scrollPane2 = new JScrollPane(html_textPane);
 	    scrollPane2.setBounds(12, 404, 525, 237);
 	    scrollPane2.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -378,8 +417,19 @@ public class UI extends JFrame {
 	                new ActionListener() {
 	                    public void actionPerformed(ActionEvent e) {
 	                    	
-	                    	new BackgroundColorAction(Color.white).actionPerformed(e);
-	                      
+	                    	Highlighter h = word_editorPane.getHighlighter(); 
+	                    	int start = word_editorPane.getSelectionStart();
+	                    	int end = word_editorPane.getSelectionEnd();
+	                    	String selectedText = word_editorPane.getSelectedText();
+	                    	try {
+								h.addHighlight(start, end, new DefaultHighlighter.DefaultHighlightPainter(
+								      Color.white));
+							} catch (BadLocationException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+	                        
+
 	                    }
 	                }
 	            );
@@ -387,7 +437,17 @@ public class UI extends JFrame {
         background_blue.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                    	new BackgroundColorAction(Color.blue).actionPerformed(e);
+                    	Highlighter h = word_editorPane.getHighlighter(); 
+                    	int start = word_editorPane.getSelectionStart();
+                    	int end = word_editorPane.getSelectionEnd();
+                    	String selectedText = word_editorPane.getSelectedText();
+                    	try {
+							h.addHighlight(start, end, new DefaultHighlighter.DefaultHighlightPainter(
+							      Color.blue));
+						} catch (BadLocationException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} 
                     }
                 }
             );
@@ -395,7 +455,17 @@ public class UI extends JFrame {
         background_red.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                    	new BackgroundColorAction(Color.RED).actionPerformed(e); 
+                    	Highlighter h = word_editorPane.getHighlighter(); 
+                    	int start = word_editorPane.getSelectionStart();
+                    	int end = word_editorPane.getSelectionEnd();
+                    	String selectedText = word_editorPane.getSelectedText();
+                    	DefaultHighlighter.DefaultHighlightPainter highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.red);
+                    	try {
+                    		word_editorPane.getHighlighter().addHighlight(start, end, highlightPainter);
+						} catch (BadLocationException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} 
                     }
                 }
             );
@@ -403,7 +473,18 @@ public class UI extends JFrame {
         background_yellow.addActionListener(new ActionListener() {
             
         	public void actionPerformed(ActionEvent e) { 
-        		new BackgroundColorAction(Color.yellow).actionPerformed(e);
+            	int start = word_editorPane.getSelectionStart();
+            	int end = word_editorPane.getSelectionEnd();
+            	int number  = end - start;
+            	StyledDocument doc = (StyledDocument) word_editorPane.getDocument();
+            	SimpleAttributeSet background = new SimpleAttributeSet();
+            	DefaultHighlighter.DefaultHighlightPainter highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+            	try {
+					word_editorPane.getHighlighter().addHighlight(start, end, highlightPainter);
+				} catch (BadLocationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
             }
         }
         
@@ -414,12 +495,9 @@ public class UI extends JFrame {
         
         word_black.addActionListener(new StyledEditorKit.ForegroundAction("Black", Color.black));
         
-        
         word_blue.addActionListener(new StyledEditorKit.ForegroundAction("Blue", Color.blue));
         
-        
         word_yellow.addActionListener(new StyledEditorKit.ForegroundAction("Yellow", Color.yellow));
-        
         
         word_red.addActionListener(new StyledEditorKit.ForegroundAction("Red", Color.red));
         
@@ -434,21 +512,21 @@ public class UI extends JFrame {
         
         
         
-        
-        
-        
         insert_pic.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent ae)  
         	{ 
         	
         		JFileChooser fileChooser = new JFileChooser();//宣告filechooser 
         		int returnValue = fileChooser.showOpenDialog(null);//叫出filechooser 
-        		HTMLDocument doc = (HTMLDocument) word_editorPane.getDocument();
+        		Document doc = word_editorPane.getDocument();
         		if (returnValue == JFileChooser.APPROVE_OPTION) //判斷是否選擇檔案 
         		{ 
-        		String Path = fileChooser.getSelectedFile().getAbsolutePath();
-        		System.out.println(Path);
-        		
+        		File selectedFile = fileChooser.getSelectedFile();//指派給File 
+        		String selectPath = fileChooser.getSelectedFile().getPath();
+        		System.out.println( selectPath);
+        		word_editorPane.setText("<html><img src='"+selectPath+"' ></img>");
+
+
         		}
         		
         		
